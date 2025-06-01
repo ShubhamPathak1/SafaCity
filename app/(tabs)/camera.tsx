@@ -1,3 +1,4 @@
+import { sendToGemini } from "@/services/geminiApi";
 import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
 import {
   CameraMode,
@@ -5,6 +6,7 @@ import {
   CameraView,
   useCameraPermissions,
 } from "expo-camera";
+import * as FileSystem from "expo-file-system";
 import { Image } from "expo-image";
 import { useRef, useState } from "react";
 import { Button, Pressable, StyleSheet, Text, View } from "react-native";
@@ -16,6 +18,7 @@ export default function App() {
   const [mode, setMode] = useState<CameraMode>("picture");
   const [facing, setFacing] = useState<CameraType>("back");
   const [recording, setRecording] = useState(false);
+  const [geminiResponse, setGeminiResponse] = useState("");
 
   if (!permission) {
     return null;
@@ -33,31 +36,37 @@ export default function App() {
   }
 
   const takePicture = async () => {
+    try {
     const photo = await ref.current?.takePictureAsync();
-    setUri(photo?.uri);
+
+    if (photo?.uri) {
+      setUri(photo.uri);
+
+      // Convert to base64
+      const base64 = await FileSystem.readAsStringAsync(photo.uri, {
+        encoding: FileSystem.EncodingType.Base64,
+      });
+      // console.log(base64)
+
+      // Send to Gemini API
+      const response = await sendToGemini(base64);
+      console.log("Gemini response:", response);
+
+      // You could show this response in UI using state
+      setGeminiResponse(response); 
+    }
+  } catch (error) {
+    console.error("Error taking picture or sending to Gemini:", error);
+  }
+
   };
 
-  // const recordVideo = async () => {
-  //   if (recording) {
-  //     setRecording(false);
-  //     ref.current?.stopRecording();
-  //     return;
-  //   }
-  //   setRecording(true);
-  //   const video = await ref.current?.recordAsync();
-  //   console.log({ video });
-  // };
-
-  // const toggleMode = () => {
-  //   setMode((prev) => (prev === "picture" ? "video" : "picture"));
-  // };
 
   const toggleFacing = () => {
     setFacing((prev) => (prev === "back" ? "front" : "back"));
   };
 
   const renderPicture = () => {
-    console.log(uri)
     return (
       <View>
         <Image
@@ -65,7 +74,8 @@ export default function App() {
           contentFit="contain"
           style={{ width: 300, aspectRatio: 1 }}
         />
-        <Button onPress={() => setUri(null)} title="Take another picture" />
+        <Text>{geminiResponse}</Text>
+        <Button onPress={() => setUri(null)} title="Scan Another Waste" />
       </View>
     );
   };
@@ -81,13 +91,6 @@ export default function App() {
         responsiveOrientationWhenOrientationLocked
       >
         <View style={styles.shutterContainer}>
-          {/* <Pressable onPress={toggleMode}>
-            {mode === "picture" ? (
-              <AntDesign name="picture" size={32} color="white" />
-            ) : (
-              <Feather name="video" size={32} color="white" />
-            )}
-          </Pressable> */}
           <Pressable onPress={mode === "picture" ? takePicture : recordVideo}>
             {({ pressed }) => (
               <View
