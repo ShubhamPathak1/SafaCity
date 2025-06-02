@@ -9,7 +9,7 @@ import {
 import * as FileSystem from "expo-file-system";
 import { Image } from "expo-image";
 import { useRef, useState } from "react";
-import { Button, Pressable, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, Button, Pressable, StyleSheet, Text, View } from "react-native";
 
 export default function App() {
   const [permission, requestPermission] = useCameraPermissions();
@@ -18,7 +18,9 @@ export default function App() {
   const [mode, setMode] = useState<CameraMode>("picture");
   const [facing, setFacing] = useState<CameraType>("back");
   const [recording, setRecording] = useState(false);
-  const [geminiResponse, setGeminiResponse] = useState("");
+  // const [geminiResponse, setGeminiResponse] = useState("");
+   const [geminiResponse, setGeminiResponse] = useState<any | null>(null);
+   const [isLoading, setIsLoading] = useState(false);
 
   if (!permission) {
     return null;
@@ -36,6 +38,8 @@ export default function App() {
   }
 
   const takePicture = async () => {
+    setGeminiResponse(null); // Clear previous response
+    setIsLoading(true); // Start loading
     try {
     const photo = await ref.current?.takePictureAsync();
 
@@ -52,12 +56,23 @@ export default function App() {
       const response = await sendToGemini(base64);
       console.log("Gemini response:", response);
 
+       if (response && typeof response === 'object' && !response.error) {
+            setGeminiResponse(response);
+        } else {
+            // Handle cases where parsing failed or Gemini returned an error
+            setGeminiResponse({ error: "Could not process waste data. Please try again." });
+            console.error("Issue with Gemini response:", response);
+        }
+
       // You could show this response in UI using state
-      setGeminiResponse(response); 
+      // setGeminiResponse(response); 
     }
   } catch (error) {
-    console.error("Error taking picture or sending to Gemini:", error);
-  }
+      console.error("Error taking picture or sending to Gemini:", error);
+      // setGeminiResponse({ error: `An unexpected error occurred: ${error.message || error}` });
+  }finally {
+        setIsLoading(false); // Stop loading
+    }
 
   };
 
@@ -66,16 +81,52 @@ export default function App() {
     setFacing((prev) => (prev === "back" ? "front" : "back"));
   };
 
+  // const renderPicture = () => {
+  //   return (
+  //     <View>
+  //       <Image
+  //         source={{ uri }}
+  //         contentFit="contain"
+  //         style={{ width: 300, aspectRatio: 1 }}
+  //       />
+  //       <Text>{geminiResponse}</Text>
+  //       <Button onPress={() => setUri(null)} title="Scan Another Waste" />
+  //     </View>
+  //   );
+  // };
   const renderPicture = () => {
     return (
-      <View>
+      <View >
         <Image
           source={{ uri }}
           contentFit="contain"
           style={{ width: 300, aspectRatio: 1 }}
         />
-        <Text>{geminiResponse}</Text>
-        <Button onPress={() => setUri(null)} title="Scan Another Waste" />
+        {isLoading ? (
+          <ActivityIndicator size="large" color="#0000ff" />
+        ) : geminiResponse ? (
+          geminiResponse.error ? (
+            <Text >{geminiResponse.error}</Text>
+          ) : (
+            <View >
+              <Text >Waste Analysis:</Text>
+              <Text >Type: {geminiResponse.waste_type || 'N/A'}</Text>
+              <Text >Name: {geminiResponse.name || 'N/A'}</Text>
+              <Text >Biodegradable: {geminiResponse.biodegradable || 'N/A'}</Text>
+              <Text >Recyclable: {geminiResponse.recyclable || 'N/A'}</Text>
+              <Text >Reusable: {geminiResponse.reusable || 'N/A'}</Text>
+              <Text >Should be Burned: {geminiResponse.should_be_burned || 'N/A'}</Text>
+              {geminiResponse.should_be_burned === "No" && geminiResponse.reason_for_not_burning && (
+                <Text>Reason: {geminiResponse.reason_for_not_burning}</Text>
+              )}
+              {geminiResponse.notes && (
+                <Text >Notes: {geminiResponse.notes}</Text>
+              )}
+            </View>
+          )
+        ) : null}
+
+        <Button onPress={() => { setUri(null); setGeminiResponse(null); }} title="Scan Another Waste" />
       </View>
     );
   };
