@@ -94,7 +94,7 @@ export const sendToGemini = async (base64Image: string) => {
             Return ONLY the JSON object, with no additional text, explanation, or markdown code blocks (e.g., no \`\`\`json\`\`\` or \`\`\` delimiters).
 
             {
-              "waste_type": "string",
+              "waste_type": "electronic/organic/plastic/metal/glass/Or any other type",
               "name": "string",
               "should_be_burned": "Yes/No",
               "reason_for_not_burning": "string",

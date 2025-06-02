@@ -8,8 +8,9 @@ import {
 } from "expo-camera";
 import * as FileSystem from "expo-file-system";
 import { Image } from "expo-image";
+import { Link } from "expo-router";
 import { useRef, useState } from "react";
-import { ActivityIndicator, Button, Pressable, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, Button, Pressable, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 export default function App() {
   const [permission, requestPermission] = useCameraPermissions();
@@ -122,11 +123,19 @@ export default function App() {
               {geminiResponse.notes && (
                 <Text >Notes: {geminiResponse.notes}</Text>
               )}
+              
             </View>
           )
-        ) : null}
+        ) 
+        
+        : null}
 
         <Button onPress={() => { setUri(null); setGeminiResponse(null); }} title="Scan Another Waste" />
+          <TouchableOpacity><Text><Link href={{
+    pathname: '/maps',
+    params: { type: geminiResponse?.waste_type }
+  }}>View Disposal Sites</Link></Text></TouchableOpacity>
+        
       </View>
     );
   };
