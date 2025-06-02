@@ -1,5 +1,8 @@
+import Constants from 'expo-constants';
+const {APIKEY} = Constants.expoConfig?.extra;
+
 export const sendToGemini = async (base64Image: string) => {
-  const API_KEY = "AIzaSyAeOXu1alpnypG1bEPm9Ez8-kteRkRf_gM";
+  const API_KEY = APIKEY;
   const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${API_KEY}`;
   
 

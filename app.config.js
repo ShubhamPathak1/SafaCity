@@ -1,4 +1,6 @@
-{
+import "dotenv/config";
+
+export default {
   "expo": {
     "name": "wasteScanner",
     "slug": "wasteScanner",
@@ -10,6 +12,9 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true
+    },
+    "extra": {
+      APIKEY: process.env.EXPO_GOOGLE_GEMINI_API_KEY,
     },
     "android": {
       "adaptiveIcon": {
