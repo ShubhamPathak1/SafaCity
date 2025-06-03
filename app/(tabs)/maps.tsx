@@ -223,6 +223,7 @@ export default function MapScreen() {
   const [filteredMarkers, setFilteredMarkers] = useState(markers);
   const [refreshing, setRefreshing] = useState(false);
 
+
   useEffect(() => {
     if (type && typeof type === "string") {
       const filtered = markers.filter((marker) => marker.wasteType === type);
@@ -245,8 +246,8 @@ export default function MapScreen() {
   const INITIAL_REGION = {
     latitude: 27.76,
     longitude: 85.35,
-    latitudeDelta: 0.1,
-    longitudeDelta: 0.1,
+    latitudeDelta: 0.001,
+    longitudeDelta: 0.001,
   };
 
   const getColor = (wasteType: string) => {
@@ -289,7 +290,7 @@ const iconMap: Record<string, ImageSourcePropType> = {
             Showing {type} waste sites — Pull down to reset
           </Text>
         )}
-        <MapView style={styles.map} initialRegion={INITIAL_REGION}>
+        <MapView style={styles.map} initialRegion={INITIAL_REGION} >
           {filteredMarkers.map((marker, index) => (
               <Marker
               key={index}

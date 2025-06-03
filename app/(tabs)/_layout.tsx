@@ -40,6 +40,13 @@ export default function TabLayout() {
           tabBarIcon: ({ color }) => <IconSymbol size={28} name="camera.fill" color={color} />,
         }}
       />
+      <Tabs.Screen
+        name="bot"
+        options={{
+          title: 'WasteBot',
+          tabBarIcon: ({ color }) => <IconSymbol size={28} name="camera.fill" color={color} />,
+        }}
+      />
     </Tabs>
   );
 }
