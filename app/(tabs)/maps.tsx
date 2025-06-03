@@ -203,13 +203,20 @@ import { markers } from "@/constants/markers";
 import { useLocalSearchParams } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import {
-    RefreshControl,
-    ScrollView,
-    StyleSheet,
-    Text,
-    View
+  ImageSourcePropType,
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View
 } from "react-native";
 import MapView, { Callout, Marker } from "react-native-maps";
+
+import blueMarker from '../../assets/images/locationMarker/BlueMarker.png';
+import greenMarker from '../../assets/images/locationMarker/GreenMarker.png';
+import purpleMarker from '../../assets/images/locationMarker/PurpleMarker.png';
+import redMarker from '../../assets/images/locationMarker/RedMarker.png';
+import yellowMarker from '../../assets/images/locationMarker/YellowMarker.png';
 
 export default function MapScreen() {
   const { type } = useLocalSearchParams(); // comes from router.push('/map?type=plastic')
@@ -259,6 +266,15 @@ export default function MapScreen() {
     }
   };
 
+const iconMap: Record<string, ImageSourcePropType> = {
+  plastic: redMarker,
+  electronic: blueMarker,
+  organic: yellowMarker,
+  glass: greenMarker,
+  metal: purpleMarker,
+};
+
+
   return (
 
     <ScrollView
@@ -270,7 +286,7 @@ export default function MapScreen() {
       <View style={styles.container}>
         {type && (
             <Text style={styles.filterNote}>
-            Showing {type.toUpperCase()} waste sites — Pull down to reset
+            Showing {type} waste sites — Pull down to reset
           </Text>
         )}
         <MapView style={styles.map} initialRegion={INITIAL_REGION}>
@@ -278,7 +294,8 @@ export default function MapScreen() {
               <Marker
               key={index}
               coordinate={marker}
-              pinColor={getColor(marker.wasteType)}
+              // pinColor={getColor(marker.wasteType)}
+              image={iconMap[marker.wasteType]}
               >
               <Callout>
                 <View>

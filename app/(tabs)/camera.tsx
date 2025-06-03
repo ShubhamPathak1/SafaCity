@@ -39,6 +39,7 @@ export default function App() {
   }
 
   const takePicture = async () => {
+    console.log("photo taken")
     setGeminiResponse(null); // Clear previous response
     setIsLoading(true); // Start loading
     try {
@@ -142,41 +143,77 @@ export default function App() {
 
   const renderCamera = () => {
     return (
+      // <CameraView
+      //   style={styles.camera}
+      //   ref={ref}
+      //   mode={mode}
+      //   facing={facing}
+      //   mute={false}
+      //   responsiveOrientationWhenOrientationLocked
+      // >
+      //   <View style={styles.shutterContainer}>
+      //     <Pressable onPress={mode === "picture" ? takePicture : recordVideo}>
+      //       {({ pressed }) => (
+      //         <View
+      //           style={[
+      //             styles.shutterBtn,
+      //             {
+      //               opacity: pressed ? 0.5 : 1,
+      //             },
+      //           ]}
+      //         >
+      //           <View
+      //             style={[
+      //               styles.shutterBtnInner,
+      //               {
+      //                 backgroundColor: mode === "picture" ? "white" : "red",
+      //               },
+      //             ]}
+      //           />
+      //         </View>
+      //       )}
+      //     </Pressable>
+      //     <Pressable onPress={toggleFacing}>
+      //       <FontAwesome6 name="rotate-left" size={32} color="white" />
+      //     </Pressable>
+      //   </View>
+      // </CameraView>
+      <View style={{ flex: 1, width: "100%" }}>
       <CameraView
-        style={styles.camera}
+        style={StyleSheet.absoluteFill}
         ref={ref}
         mode={mode}
         facing={facing}
         mute={false}
         responsiveOrientationWhenOrientationLocked
-      >
-        <View style={styles.shutterContainer}>
-          <Pressable onPress={mode === "picture" ? takePicture : recordVideo}>
-            {({ pressed }) => (
+      />
+
+      <View style={styles.shutterContainer}>
+        <Pressable onPress={mode === "picture" ? takePicture : undefined}>
+          {({ pressed }) => (
+            <View
+              style={[
+                styles.shutterBtn,
+                { opacity: pressed ? 0.5 : 1 },
+              ]}
+            >
               <View
                 style={[
-                  styles.shutterBtn,
+                  styles.shutterBtnInner,
                   {
-                    opacity: pressed ? 0.5 : 1,
+                    backgroundColor: mode === "picture" ? "white" : "red",
                   },
                 ]}
-              >
-                <View
-                  style={[
-                    styles.shutterBtnInner,
-                    {
-                      backgroundColor: mode === "picture" ? "white" : "red",
-                    },
-                  ]}
-                />
-              </View>
-            )}
-          </Pressable>
-          <Pressable onPress={toggleFacing}>
-            <FontAwesome6 name="rotate-left" size={32} color="white" />
-          </Pressable>
-        </View>
-      </CameraView>
+              />
+            </View>
+          )}
+        </Pressable>
+
+        <Pressable onPress={toggleFacing}>
+          <FontAwesome6 name="rotate-left" size={32} color="white" />
+        </Pressable>
+      </View>
+    </View>
     );
   };
 
