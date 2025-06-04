@@ -6,7 +6,7 @@ import { useAuth } from '@clerk/clerk-expo';
 import { MaterialIcons } from '@expo/vector-icons';
 import { Redirect, Tabs, useRouter } from 'expo-router';
 import React from 'react';
-import { Dimensions, Platform, StyleSheet, Text, View } from 'react-native';
+import { Dimensions, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 const { height, width } = Dimensions.get('window');
 export const titleSize = (height + width) * 0.04 / 2;
@@ -23,6 +23,11 @@ export default function TabLayout() {
   const Header = () => (
     <View style={styles.headerContainer}>
       <Text style={styles.headerTitle}>GreenWaste</Text>
+       <View style={styles.headerIcons}>
+        <TouchableOpacity onPress={() => router.push('/notifications')}>
+          <MaterialIcons name="notifications" size={titleSize} color="#1f7f4c" />
+        </TouchableOpacity>
+      </View>
     </View>
   );
 

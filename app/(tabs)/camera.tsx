@@ -198,7 +198,7 @@ export default function App() {
     {chatMessages.map(renderChatMessage)}
     {isSendingChat && (
       <View style={[styles.chatBubble, styles.botBubble]}>
-        <Text style={styles.botText}>Thinking...</Text>
+        <Text style={styles.botText}>...</Text>
       </View>
     )}
   </ScrollView>
