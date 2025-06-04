@@ -11,6 +11,8 @@ import {
   View
 } from "react-native";
 import MapView, { Callout, Marker } from "react-native-maps";
+import titleSize from "./_layout";
+// console.log(titleSize)
 
 import blueMarker from '../../assets/images/locationMarker/blue-dustbin.png';
 import greenMarker from '../../assets/images/locationMarker/green-dustbin.png';

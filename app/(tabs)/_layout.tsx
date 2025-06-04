@@ -1,7 +1,7 @@
 import { Tabs } from 'expo-router';
 import React from 'react';
 import { Dimensions, Platform } from 'react-native';
-
+import { useRouter } from 'expo-router';
 import { HapticTab } from '@/components/HapticTab';
 import TabBarBackground from '@/components/ui/TabBarBackground';
 import { Colors } from '@/constants/Colors';
@@ -15,6 +15,8 @@ export const titleSize = (height+width) * 0.04/2;
 export default function TabLayout() {
   const colorScheme = useColorScheme();
 
+  const router = useRouter();
+
   return (
     <Tabs
       screenOptions={{
@@ -27,14 +29,14 @@ export default function TabLayout() {
                 size = {titleSize}
                 color = "#000"
                 style = {{marginRight: titleSize}}
-                onPress = {() => {console.log('Personal stuff')}}
+                onPress = {() => {router.push('/profile')}}
                 />
                 <MaterialIcons 
                   name="notifications"
                   size = {titleSize}
                   color = "#000"
                   style = {{marginRight: titleSize}}
-                  onPress = {() => {console.log('Notifs sent')}}
+                  onPress = {() => {router.push('/notifications')}}
                 />
 
             </>
