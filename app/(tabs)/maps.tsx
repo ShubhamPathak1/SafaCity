@@ -15,15 +15,57 @@ import {
   View
 } from "react-native";
 import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
+import React from 'react';
 
-// Import marker images
+// Dustbin images
 import purpleMarker from '../../assets/images/locationMarker/black-dustbin.png';
 import blueMarker from '../../assets/images/locationMarker/blue-dustbin.png';
 import greenMarker from '../../assets/images/locationMarker/green-dustbin.png';
 import redMarker from '../../assets/images/locationMarker/red-dustbin.png';
 import yellowMarker from '../../assets/images/locationMarker/yellow-dustbin.png';
 
+// Truck images (same wasteType colors)
+import purpleTruck from '../../assets/images/trucks/plasticVehicle.png';
+import blueTruck from '../../assets/images/trucks/plasticVehicle.png';
+import greenTruck from '../../assets/images/trucks/plasticVehicle.png';
+import redTruck from '../../assets/images/trucks/plasticVehicle.png';
+import yellowTruck from '../../assets/images/trucks/plasticVehicle.png';
+
 const { width, height } = Dimensions.get('window');
+
+// Static trucks placed around Budanilkantha area
+const TRUCKS = [
+  {
+    id: 'truck-1',
+    latitude: 27.7801,
+    longitude: 85.3630,
+    wasteType: 'plastic',
+  },
+  {
+    id: 'truck-2',
+    latitude: 27.7777,
+    longitude: 85.3598,
+    wasteType: 'electronic',
+  },
+  {
+    id: 'truck-3',
+    latitude: 27.7744,
+    longitude: 85.3625,
+    wasteType: 'organic',
+  },
+  {
+    id: 'truck-4',
+    latitude: 27.7762,
+    longitude: 85.3661,
+    wasteType: 'glass',
+  },
+  {
+    id: 'truck-5',
+    latitude: 27.7788,
+    longitude: 85.3602,
+    wasteType: 'metal',
+  },
+];
 
 export default function MapScreen() {
   const { type } = useLocalSearchParams();
@@ -55,6 +97,14 @@ export default function MapScreen() {
     metal: purpleMarker,
   };
 
+  const truckIconMap: Record<string, ImageSourcePropType> = {
+    plastic: redTruck,
+    electronic: blueTruck,
+    organic: yellowTruck,
+    glass: greenTruck,
+    metal: purpleTruck,
+  };
+
   const handleMarkerPress = (marker: any) => {
     setSelectedMarker(marker);
     setModalVisible(true);
@@ -81,14 +131,33 @@ export default function MapScreen() {
         showsMyLocationButton
         showsCompass
       >
+        {/* Dustbin markers */}
         {filteredMarkers.map((marker, index) => (
           <Marker
-            key={index}
+            key={`dustbin-${index}`}
             coordinate={marker}
             onPress={() => handleMarkerPress(marker)}
           >
             <Image 
               source={iconMap[marker.wasteType]} 
+              style={styles.markerImage}
+              resizeMode="contain"
+            />
+          </Marker>
+        ))}
+
+        {/* Truck markers */}
+        {TRUCKS.map((truck) => (
+          <Marker
+            key={truck.id}
+            coordinate={{
+              latitude: truck.latitude,
+              longitude: truck.longitude,
+            }}
+            title={`Truck ${truck.id}`}
+          >
+            <Image
+              source={truckIconMap[truck.wasteType]}
               style={styles.markerImage}
               resizeMode="contain"
             />
