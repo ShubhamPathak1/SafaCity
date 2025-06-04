@@ -22,7 +22,7 @@ export default function TabLayout() {
 
   const Header = () => (
     <View style={styles.headerContainer}>
-      <Text style={styles.headerTitle}>GreenWaste</Text>
+      <Text style={styles.headerTitle}>SafaCity</Text>
        <View style={styles.headerIcons}>
         <TouchableOpacity onPress={() => router.push('/notifications')}>
           <MaterialIcons name="notifications" size={titleSize} color="#1f7f4c" />

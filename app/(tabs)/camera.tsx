@@ -13,7 +13,11 @@ import * as FileSystem from "expo-file-system";
 import { Image } from "expo-image";
 import { router } from "expo-router";
 import { useRef, useState } from "react";
-import { ActivityIndicator, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, Dimensions, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+
+const { height: SCREEN_HEIGHT } = Dimensions.get('window');
+const IMAGE_HEIGHT = 300; // Fixed height for the image
+const OVERLAY_INITIAL_HEIGHT = SCREEN_HEIGHT - IMAGE_HEIGHT; // Initial height of overlay
 
 type ChatMessage = {
   id: string;
@@ -35,7 +39,35 @@ export default function App() {
 
   const { user } = useUser();
   const username = user?.username || user?.primaryEmailAddress?.emailAddress;
-  
+
+  const formatBotResponse = (text: string) => {
+    // Replace markdown formatting with React Native compatible formatting
+    const parts = text.split(/(\*\*.*?\*\*|_.*?_|`.*?`)/g);
+    
+    return parts.map((part, index) => {
+      if (part.startsWith('**') && part.endsWith('**')) {
+        return (
+          <Text key={index} style={{ fontWeight: 'bold' }}>
+            {part.slice(2, -2)}
+          </Text>
+        );
+      } else if (part.startsWith('_') && part.endsWith('_')) {
+        return (
+          <Text key={index} style={{ fontStyle: 'italic' }}>
+            {part.slice(1, -1)}
+          </Text>
+        );
+      } else if (part.startsWith('`') && part.endsWith('`')) {
+        return (
+          <Text key={index} style={{ fontFamily: Platform.OS === 'ios' ? 'Courier New' : 'monospace' }}>
+            {part.slice(1, -1)}
+          </Text>
+        );
+      } else {
+        return <Text key={index}>{part}</Text>;
+      }
+    });
+  };
 
   if (!permission) return null;
 
@@ -149,7 +181,7 @@ export default function App() {
         message.sender === 'user' ? styles.userBubble : styles.botBubble
       ]}>
         <Text style={message.sender === 'user' ? styles.userText : styles.botText}>
-          {message.text}
+          {message.sender === 'bot' ? formatBotResponse(message.text) : message.text}
         </Text>
       </View>
     );
@@ -158,182 +190,193 @@ export default function App() {
   const renderPicture = () => {
     return (
       <View style={styles.resultContainer}>
-        {/* Image Preview */}
-        <View style={styles.imagePreviewContainer}>
+        {/* Fixed Image Background */}
+        <View style={styles.imageBackground}>
           <Image
             source={{ uri }}
             contentFit="cover"
-            style={styles.capturedImage}
+            style={styles.backgroundImage}
             transition={200}
           />
         </View>
 
-        {/* Toggle between analysis and chat */}
-        <View style={styles.toggleContainer}>
-          <TouchableOpacity 
-            style={[styles.toggleButton, !chatMode && styles.activeToggle]}
-            onPress={() => setChatMode(false)}
-          >
-            <Text style={!chatMode ? styles.activeToggleText : styles.inactiveToggleText}>Analysis</Text>
-          </TouchableOpacity>
-          <TouchableOpacity 
-            style={[styles.toggleButton, chatMode && styles.activeToggle]}
-            onPress={() => setChatMode(true)}
-          >
-            <Text style={chatMode ? styles.activeToggleText : styles.inactiveToggleText}>Ask WasteBot</Text>
-          </TouchableOpacity>
-        </View>
+        {/* Main Scrollable Container */}
+        <ScrollView 
+          style={styles.mainScrollView}
+          contentContainerStyle={styles.mainScrollContent}
+          showsVerticalScrollIndicator={false}
+          bounces={false}
+        >
+          {/* Spacer to push content below image initially */}
+          <View style={styles.imageSpacer} />
 
-        {chatMode ? (
-          <KeyboardAvoidingView
-  style={{ flex: 1 }}
-  behavior={Platform.OS === "ios" ? "padding" : "height"}
-  keyboardVerticalOffset={Platform.OS === "ios" ? 150 : 200}
->
-  <ScrollView 
-    style={styles.chatContainer}
-    contentContainerStyle={styles.chatContent}
-    keyboardShouldPersistTaps="handled"
-  >
-    {chatMessages.map(renderChatMessage)}
-    {isSendingChat && (
-      <View style={[styles.chatBubble, styles.botBubble]}>
-        <Text style={styles.botText}>...</Text>
-      </View>
-    )}
-  </ScrollView>
+          {/* Scrollable Overlay Content */}
+          <View style={styles.overlayContent}>
+            {/* Drag Handle */}
+            <View style={styles.dragHandle} />
+            
+            {/* Toggle between analysis and chat */}
+            <View style={styles.toggleContainer}>
+              <TouchableOpacity 
+                style={[styles.toggleButton, !chatMode && styles.activeToggle]}
+                onPress={() => setChatMode(false)}
+              >
+                <Text style={!chatMode ? styles.activeToggleText : styles.inactiveToggleText}>Analysis</Text>
+              </TouchableOpacity>
+              <TouchableOpacity 
+                style={[styles.toggleButton, chatMode && styles.activeToggle]}
+                onPress={() => setChatMode(true)}
+              >
+                <Text style={chatMode ? styles.activeToggleText : styles.inactiveToggleText}>Ask WasteBot</Text>
+              </TouchableOpacity>
+            </View>
 
-  <View style={styles.chatInputContainer}>
-    <TextInput
-      style={styles.chatInput}
-      placeholder="Ask about this item..."
-      value={chatInput}
-      onChangeText={setChatInput}
-      onSubmitEditing={handleSendChat}
-      returnKeyType="send"
-    />
-    <TouchableOpacity 
-      style={styles.sendButton}
-      onPress={handleSendChat}
-      disabled={isSendingChat}
-    >
-      <FontAwesome6 name="paper-plane" size={20} color="white" />
-    </TouchableOpacity>
-  </View>
-</KeyboardAvoidingView>
+            {chatMode ? (
+              <KeyboardAvoidingView
+                style={styles.chatModeContainer}
+                behavior={Platform.OS === "ios" ? "padding" : "height"}
+                keyboardVerticalOffset={Platform.OS === "ios" ? 100 : 150}
+              >
+                <View style={styles.chatContainer}>
+                  {chatMessages.map(renderChatMessage)}
+                  {isSendingChat && (
+                    <View style={[styles.chatBubble, styles.botBubble]}>
+                      <Text style={styles.botText}>...</Text>
+                    </View>
+                  )}
+                </View>
 
-        ) : (
-          <ScrollView style={styles.resultsScrollView}>
-        {isLoading ? (
-          <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color="#4CAF50" />
-            <Text style={styles.loadingText}>Analyzing your waste...</Text>
+                <View style={styles.chatInputContainer}>
+                  <TextInput
+                    style={styles.chatInput}
+                    placeholder="Ask about this item..."
+                    value={chatInput}
+                    onChangeText={setChatInput}
+                    onSubmitEditing={handleSendChat}
+                    returnKeyType="send"
+                  />
+                  <TouchableOpacity 
+                    style={styles.sendButton}
+                    onPress={handleSendChat}
+                    disabled={isSendingChat}
+                  >
+                    <FontAwesome6 name="paper-plane" size={20} color="white" />
+                  </TouchableOpacity>
+                </View>
+              </KeyboardAvoidingView>
+            ) : (
+              <View style={styles.analysisContainer}>
+                {isLoading ? (
+                  <View style={styles.loadingContainer}>
+                    <ActivityIndicator size="large" color="#4CAF50" />
+                    <Text style={styles.loadingText}>Analyzing your waste...</Text>
+                  </View>
+                ) : geminiResponse ? (
+                  geminiResponse.error ? (
+                    <View style={styles.errorContainer}>
+                      <FontAwesome6 name="triangle-exclamation" size={24} color="#FF5722" />
+                      <Text style={styles.errorText}>{geminiResponse.error}</Text>
+                    </View>
+                  ) : (
+                    <View>
+                      <Text style={styles.sectionTitle}>Waste Analysis</Text>
+                      
+                      {/* Waste Type Card */}
+                      <View style={[styles.infoCard, { backgroundColor: '#E8F5E9' }]}>
+                        <Text style={styles.infoCardTitle}>Type</Text>
+                        <Text style={styles.infoCardValue}>
+                          {geminiResponse.waste_type || 'N/A'}
+                        </Text>
+                      </View>
+                      
+                      {/* Waste Name */}
+                      <View style={styles.detailRow}>
+                        <Text style={styles.detailLabel}>Name:</Text>
+                        <Text style={styles.detailValue}>{geminiResponse.name || 'N/A'}</Text>
+                      </View>
+                      
+                      {/* Properties Grid */}
+                      <View style={styles.propertiesGrid}>
+                        <View style={[styles.propertyBadge, geminiResponse.biodegradable === 'Yes' ? styles.positiveBadge : styles.negativeBadge]}>
+                          <Text style={styles.propertyBadgeText}>Biodegradable</Text>
+                          <Text style={styles.propertyBadgeValue}>{geminiResponse.biodegradable || 'N/A'}</Text>
+                        </View>
+                        
+                        <View style={[styles.propertyBadge, geminiResponse.recyclable === 'Yes' ? styles.positiveBadge : styles.negativeBadge]}>
+                          <Text style={styles.propertyBadgeText}>Recyclable</Text>
+                          <Text style={styles.propertyBadgeValue}>{geminiResponse.recyclable || 'N/A'}</Text>
+                        </View>
+                        
+                        <View style={[styles.propertyBadge, geminiResponse.reusable === 'Yes' ? styles.positiveBadge : styles.negativeBadge]}>
+                          <Text style={styles.propertyBadgeText}>Reusable</Text>
+                          <Text style={styles.propertyBadgeValue}>{geminiResponse.reusable || 'N/A'}</Text>
+                        </View>
+                        
+                        <View style={[styles.propertyBadge, geminiResponse.should_be_burned === 'Yes' ? styles.warningBadge : styles.negativeBadge]}>
+                          <Text style={styles.propertyBadgeText}>Should Burn</Text>
+                          <Text style={styles.propertyBadgeValue}>{geminiResponse.should_be_burned || 'N/A'}</Text>
+                        </View>
+                      </View>
+                      
+                      {/* Additional Info */}
+                      {geminiResponse.should_be_burned === "No" && geminiResponse.reason_for_not_burning && (
+                        <View style={styles.additionalInfo}>
+                          <Text style={styles.additionalInfoText}>
+                            {geminiResponse.reason_for_not_burning}
+                          </Text>
+                        </View>
+                      )}
+                      
+                      {geminiResponse.notes && (
+                        <View style={styles.notesContainer}>
+                          <Text style={styles.notesTitle}>Notes:</Text>
+                          <Text style={styles.notesText}>{geminiResponse.notes}</Text>
+                        </View>
+                      )}
+                      
+                      {/* Reward Points */}
+                      <View style={styles.rewardContainer}>
+                        <Text style={styles.rewardTitle}>You Earned</Text>
+                        <View style={styles.rewardPoints}>
+                          <FontAwesome6 name="coins" size={24} color="#FFD700" />
+                          <Text style={styles.rewardValue}>
+                            {geminiResponse.rewards || 0} Points
+                          </Text>
+                        </View>
+                      </View>
+                    </View>
+                  )
+                ) : null}
+              </View>
+            )}
+
+            {/* Action Buttons - Always at bottom */}
+            <View style={styles.actionButtons}>
+              <TouchableOpacity 
+                style={styles.scanAgainButton}
+                onPress={() => { setUri(null); setGeminiResponse(null); setChatMessages([]); }}
+              >
+                <FontAwesome6 name="camera-rotate" size={20} color="white" />
+                <Text style={styles.scanAgainButtonText}>Scan Another</Text>
+              </TouchableOpacity>
+              
+              {geminiResponse?.waste_type && (
+                <TouchableOpacity 
+                  style={styles.disposalSitesButton}
+                  onPress={() => {
+                    router.push({
+                      pathname: '/maps',
+                      params: { type: geminiResponse.waste_type }
+                    });
+                  }}
+                >
+                  <FontAwesome6 name="map-location-dot" size={20} color="white" />
+                  <Text style={styles.disposalSitesButtonText}>Disposal Sites</Text>
+                </TouchableOpacity>
+              )}
+            </View>
           </View>
-        ) : geminiResponse ? (
-          geminiResponse.error ? (
-            <View style={styles.errorContainer}>
-              <FontAwesome6 name="triangle-exclamation" size={24} color="#FF5722" />
-              <Text style={styles.errorText}>{geminiResponse.error}</Text>
-            </View>
-          ) : (
-            <View style={styles.analysisContainer}>
-              <Text style={styles.sectionTitle}>Waste Analysis</Text>
-              
-              {/* Waste Type Card */}
-              <View style={[styles.infoCard, { backgroundColor: '#E8F5E9' }]}>
-                <Text style={styles.infoCardTitle}>Type</Text>
-                <Text style={styles.infoCardValue}>
-                  {geminiResponse.waste_type || 'N/A'}
-                </Text>
-              </View>
-              
-              {/* Waste Name */}
-              <View style={styles.detailRow}>
-                <Text style={styles.detailLabel}>Name:</Text>
-                <Text style={styles.detailValue}>{geminiResponse.name || 'N/A'}</Text>
-              </View>
-              
-              {/* Properties Grid */}
-              <View style={styles.propertiesGrid}>
-                <View style={[styles.propertyBadge, geminiResponse.biodegradable === 'Yes' ? styles.positiveBadge : styles.negativeBadge]}>
-                  <Text style={styles.propertyBadgeText}>Biodegradable</Text>
-                  <Text style={styles.propertyBadgeValue}>{geminiResponse.biodegradable || 'N/A'}</Text>
-                </View>
-                
-                <View style={[styles.propertyBadge, geminiResponse.recyclable === 'Yes' ? styles.positiveBadge : styles.negativeBadge]}>
-                  <Text style={styles.propertyBadgeText}>Recyclable</Text>
-                  <Text style={styles.propertyBadgeValue}>{geminiResponse.recyclable || 'N/A'}</Text>
-                </View>
-                
-                <View style={[styles.propertyBadge, geminiResponse.reusable === 'Yes' ? styles.positiveBadge : styles.negativeBadge]}>
-                  <Text style={styles.propertyBadgeText}>Reusable</Text>
-                  <Text style={styles.propertyBadgeValue}>{geminiResponse.reusable || 'N/A'}</Text>
-                </View>
-                
-                <View style={[styles.propertyBadge, geminiResponse.should_be_burned === 'Yes' ? styles.warningBadge : styles.negativeBadge]}>
-                  <Text style={styles.propertyBadgeText}>Should Burn</Text>
-                  <Text style={styles.propertyBadgeValue}>{geminiResponse.should_be_burned || 'N/A'}</Text>
-                </View>
-              </View>
-              
-              {/* Additional Info */}
-              {geminiResponse.should_be_burned === "No" && geminiResponse.reason_for_not_burning && (
-                <View style={styles.additionalInfo}>
-                  {/* <FontAwesome6 name="info-circle" size={16} color="#2196F3" /> */}
-                  <Text style={styles.additionalInfoText}>
-                    {geminiResponse.reason_for_not_burning}
-                  </Text>
-                </View>
-              )}
-              
-              {geminiResponse.notes && (
-                <View style={styles.notesContainer}>
-                  <Text style={styles.notesTitle}>Notes:</Text>
-                  <Text style={styles.notesText}>{geminiResponse.notes}</Text>
-                </View>
-              )}
-              
-              {/* Reward Points */}
-              <View style={styles.rewardContainer}>
-                <Text style={styles.rewardTitle}>You Earned</Text>
-                <View style={styles.rewardPoints}>
-                  <FontAwesome6 name="coins" size={24} color="#FFD700" />
-                  <Text style={styles.rewardValue}>
-                    {geminiResponse.rewards || 0} Points
-                  </Text>
-                </View>
-              </View>
-            </View>
-          )
-        ) : null}
-      </ScrollView>
-        )}
-
-        {/* Action Buttons */}
-        <View style={styles.actionButtons}>
-          <TouchableOpacity 
-            style={styles.scanAgainButton}
-            onPress={() => { setUri(null); setGeminiResponse(null); setChatMessages([]); }}
-          >
-            <FontAwesome6 name="camera-rotate" size={20} color="white" />
-            <Text style={styles.scanAgainButtonText}>Scan Another</Text>
-          </TouchableOpacity>
-          
-          {geminiResponse?.waste_type && (
-            <TouchableOpacity 
-              style={styles.disposalSitesButton}
-              onPress={() => {
-                router.push({
-                  pathname: '/maps',
-                  params: { type: geminiResponse.waste_type }
-                });
-              }}
-            >
-              <FontAwesome6 name="map-location-dot" size={20} color="white" />
-              <Text style={styles.disposalSitesButtonText}>Disposal Sites</Text>
-            </TouchableOpacity>
-          )}
-        </View>
+        </ScrollView>
       </View>
     );
   };
@@ -370,18 +413,12 @@ export default function App() {
   );
 }
 
-// Add these new styles to your existing StyleSheet
 const styles = StyleSheet.create({
-  // ... keep all your existing styles ...
   container: {
     flex: 1,
     backgroundColor: "#fff",
     alignItems: "center",
     justifyContent: "center",
-  },
-  camera: {
-    flex: 1,
-    width: "100%",
   },
   shutterContainer: {
     position: "absolute",
@@ -411,31 +448,146 @@ const styles = StyleSheet.create({
   resultContainer: {
     flex: 1,
     width: '100%',
-    backgroundColor: '#f5f5f5',
+    position: 'relative',
   },
-  imagePreviewContainer: {
-    height: 250,
-    width: '100%',
-    backgroundColor: '#e0e0e0',
-    justifyContent: 'center',
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+  // Image as background
+  imageBackground: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: IMAGE_HEIGHT,
+    zIndex: 1,
   },
-  capturedImage: {
+  backgroundImage: {
     width: '100%',
     height: '100%',
   },
-  resultsScrollView: {
+  // Main scrollable container
+  mainScrollView: {
     flex: 1,
+    zIndex: 2,
+  },
+  mainScrollContent: {
+    flexGrow: 1,
+  },
+  imageSpacer: {
+    height: IMAGE_HEIGHT - 30, // Space for image minus overlap
+  },
+  overlayContent: {
+    backgroundColor: 'white',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    minHeight: SCREEN_HEIGHT - IMAGE_HEIGHT + 100, // Ensure enough content to scroll
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: -2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  dragHandle: {
+    width: 40,
+    height: 4,
+    backgroundColor: '#ccc',
+    borderRadius: 2,
+    alignSelf: 'center',
+    marginTop: 8,
+    marginBottom: 16,
+  },
+  toggleContainer: {
+    flexDirection: 'row',
+    marginHorizontal: 16,
+    marginTop: 16,
+    marginBottom: 16,
+    backgroundColor: '#f0f0f0',
+    borderRadius: 20,
+    overflow: 'hidden',
+  },
+  toggleButton: {
+    flex: 1,
+    paddingVertical: 12,
+    alignItems: 'center',
+  },
+  activeToggle: {
+    backgroundColor: '#4CAF50',
+  },
+  activeToggleText: {
+    color: 'white',
+    fontWeight: 'bold',
+  },
+  inactiveToggleText: {
+    color: '#666',
+  },
+  // Chat mode styles
+  chatModeContainer: {
+    minHeight: 400,
+    paddingBottom: 20,
+  },
+  chatContainer: {
     paddingHorizontal: 16,
-    paddingTop: 16,
+    marginBottom: 20,
+  },
+  chatContent: {
+    paddingBottom: 20,
+  },
+  chatBubble: {
+    maxWidth: '80%',
+    padding: 12,
+    borderRadius: 12,
+    marginVertical: 4,
+  },
+  botBubble: {
+    alignSelf: 'flex-start',
+    backgroundColor: '#e5e5ea',
+    borderBottomLeftRadius: 4,
+  },
+  userBubble: {
+    alignSelf: 'flex-end',
+    backgroundColor: '#4CAF50',
+    borderBottomRightRadius: 4,
+  },
+  chatInputContainer: {
+    flexDirection: 'row',
+    padding: 16,
+    backgroundColor: 'white',
+    borderTopWidth: 1,
+    borderTopColor: '#e0e0e0',
+  },
+  chatInput: {
+    flex: 1,
+    padding: 12,
+    backgroundColor: '#f5f5f5',
+    borderRadius: 20,
+    marginRight: 8,
+  },
+  sendButton: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    backgroundColor: '#4CAF50',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  botText: {
+    color: '#000',
+    lineHeight: 20,
+  },
+  userText: {
+    color: 'white',
+    lineHeight: 20,
+  },
+  // Analysis mode styles
+  analysisScrollView: {
+    flex: 1,
+  },
+  analysisContent: {
+    paddingHorizontal: 16,
+    paddingBottom: 20,
   },
   loadingContainer: {
-    flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     paddingVertical: 40,
@@ -535,18 +687,14 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   additionalInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
     backgroundColor: '#E3F2FD',
     padding: 12,
     borderRadius: 8,
     marginTop: 12,
   },
   additionalInfoText: {
-    marginLeft: 8,
     fontSize: 14,
     color: '#0D47A1',
-    flex: 1,
   },
   notesContainer: {
     marginTop: 16,
@@ -630,81 +778,5 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
     marginLeft: 8,
-  },
-
-  toggleContainer: {
-    flexDirection: 'row',
-    marginHorizontal: 16,
-    marginTop: 16,
-    marginBottom: 8,
-    backgroundColor: '#f0f0f0',
-    borderRadius: 20,
-    overflow: 'hidden',
-  },
-  toggleButton: {
-    flex: 1,
-    paddingVertical: 12,
-    alignItems: 'center',
-  },
-  activeToggle: {
-    backgroundColor: '#4CAF50',
-  },
-  activeToggleText: {
-    color: 'white',
-    fontWeight: 'bold',
-  },
-  inactiveToggleText: {
-    color: '#666',
-  },
-  chatContainer: {
-    flex: 1,
-    paddingHorizontal: 16,
-  },
-  chatContent: {
-    paddingBottom: 80,
-  },
-  chatBubble: {
-    maxWidth: '80%',
-    padding: 12,
-    borderRadius: 12,
-    marginVertical: 4,
-  },
-  botBubble: {
-    alignSelf: 'flex-start',
-    backgroundColor: '#e5e5ea',
-    borderBottomLeftRadius: 4,
-  },
-  userBubble: {
-    alignSelf: 'flex-end',
-    backgroundColor: '#4CAF50',
-    borderBottomRightRadius: 4,
-  },
-  botText: {
-    color: '#000',
-  },
-  userText: {
-    color: 'white',
-  },
-  chatInputContainer: {
-    flexDirection: 'row',
-    padding: 12,
-    backgroundColor: 'white',
-    borderTopWidth: 1,
-    borderTopColor: '#e0e0e0',
-  },
-  chatInput: {
-    flex: 1,
-    padding: 12,
-    backgroundColor: '#f5f5f5',
-    borderRadius: 20,
-    marginRight: 8,
-  },
-  sendButton: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    backgroundColor: '#4CAF50',
-    justifyContent: 'center',
-    alignItems: 'center',
   },
 });
