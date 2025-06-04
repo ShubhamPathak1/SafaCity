@@ -1,8 +1,9 @@
 import { markers } from "@/constants/markers";
 import { MaterialIcons } from '@expo/vector-icons';
 import { useLocalSearchParams } from "expo-router";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
+  Animated,
   Dimensions,
   Image,
   ImageSourcePropType,
@@ -15,7 +16,7 @@ import {
   View
 } from "react-native";
 import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
-import React from 'react';
+
 
 // Dustbin images
 import purpleMarker from '../../assets/images/locationMarker/black-dustbin.png';
@@ -25,11 +26,7 @@ import redMarker from '../../assets/images/locationMarker/red-dustbin.png';
 import yellowMarker from '../../assets/images/locationMarker/yellow-dustbin.png';
 
 // Truck images (same wasteType colors)
-import purpleTruck from '../../assets/images/trucks/plasticVehicle.png';
-import blueTruck from '../../assets/images/trucks/plasticVehicle.png';
-import greenTruck from '../../assets/images/trucks/plasticVehicle.png';
-import redTruck from '../../assets/images/trucks/plasticVehicle.png';
-import yellowTruck from '../../assets/images/trucks/plasticVehicle.png';
+import { default as blueTruck, default as greenTruck, default as purpleTruck, default as redTruck, default as yellowTruck } from '../../assets/images/trucks/plasticVehicle.png';
 
 const { width, height } = Dimensions.get('window');
 
@@ -72,11 +69,15 @@ export default function MapScreen() {
   const [filteredMarkers, setFilteredMarkers] = useState(markers);
   const [selectedMarker, setSelectedMarker] = useState<any>(null);
   const [modalVisible, setModalVisible] = useState(false);
+   const [showFilter, setShowFilter] = useState(!!type);
+    const fadeAnim = useState(new Animated.Value(1))[0];
 
   useEffect(() => {
     if (type && typeof type === "string") {
       const filtered = markers.filter((marker) => marker.wasteType === type);
       setFilteredMarkers(filtered);
+      setShowFilter(true);
+      fadeAnim.setValue(1);
     } else {
       setFilteredMarkers(markers);
     }
@@ -105,6 +106,17 @@ export default function MapScreen() {
     metal: purpleTruck,
   };
 
+   const handleResetFilter = () => {
+    Animated.timing(fadeAnim, {
+      toValue: 0,
+      duration: 300,
+      useNativeDriver: true,
+    }).start(() => {
+      setShowFilter(false);
+      setFilteredMarkers(markers);
+    });
+  };
+
   const handleMarkerPress = (marker: any) => {
     setSelectedMarker(marker);
     setModalVisible(true);
@@ -123,6 +135,20 @@ export default function MapScreen() {
 
   return (
     <View style={styles.container}>
+     {/* Filter Indicator */}
+          {showFilter && (
+            <Animated.View style={[styles.filterContainer, { opacity: fadeAnim }]}>
+              <Text style={styles.filterText}>
+                Showing {type} disposal sites
+              </Text>
+              <TouchableOpacity 
+                style={styles.resetButton}
+                onPress={handleResetFilter}
+              >
+                <MaterialIcons name="close" size={18} color="#4CAF50" />
+              </TouchableOpacity>
+            </Animated.View>
+          )}
       <MapView
         style={styles.map}
         initialRegion={INITIAL_REGION}
@@ -223,6 +249,33 @@ export default function MapScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  filterContainer: {
+    position: 'absolute',
+    top: 20,
+    left: 20,
+    right: 20,
+    backgroundColor: 'white',
+    borderRadius: 20,
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    zIndex: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  filterText: {
+    fontSize: 14,
+    fontWeight:"bold",
+    color: '#263238',
+  },
+  resetButton: {
+    padding: 4,
   },
   map: {
     width: '100%',
