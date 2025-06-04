@@ -11,6 +11,7 @@ import {
   View
 } from "react-native";
 import MapView, { Callout, Marker } from "react-native-maps";
+import { Image } from 'react-native';
 import titleSize from "./_layout";
 // console.log(titleSize)
 
@@ -98,8 +99,11 @@ const iconMap: Record<string, ImageSourcePropType> = {
               key={index}
               coordinate={marker}
               // pinColor={getColor(marker.wasteType)}
-              image={iconMap[marker.wasteType]}
               >
+                <Image 
+                  source = {iconMap[marker.wasteType]} 
+                  style = {{width: 20, height: 20}}
+                  resizeMode = "contain"/>
               <Callout>
                 <View>
                   <Text style={{ fontWeight: "bold" }}>{marker.name}</Text>
