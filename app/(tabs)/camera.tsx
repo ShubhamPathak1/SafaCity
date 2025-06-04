@@ -10,7 +10,9 @@ import * as FileSystem from "expo-file-system";
 import { Image } from "expo-image";
 import { Link } from "expo-router";
 import { useRef, useState } from "react";
-import { ActivityIndicator, Button, Pressable, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, Button, Pressable, StyleSheet, Text, View } from "react-native";
+import { titleSize } from "./_layout.tsx";
+
 
 export default function App() {
   const [permission, requestPermission] = useCameraPermissions();
@@ -112,17 +114,17 @@ export default function App() {
           ) : (
             <View >
               <Text >Waste Analysis:</Text>
-              <Text >Type: {geminiResponse.waste_type || 'N/A'}</Text>
-              <Text >Name: {geminiResponse.name || 'N/A'}</Text>
-              <Text >Biodegradable: {geminiResponse.biodegradable || 'N/A'}</Text>
-              <Text >Recyclable: {geminiResponse.recyclable || 'N/A'}</Text>
-              <Text >Reusable: {geminiResponse.reusable || 'N/A'}</Text>
-              <Text >Should be Burned: {geminiResponse.should_be_burned || 'N/A'}</Text>
+              <Text style={styles.txtheader} >Type: </Text><Text>{geminiResponse.waste_type || 'N/A'}</Text>
+              <Text style={styles.txtheader} >Name: </Text><Text>{geminiResponse.name || 'N/A'}</Text>
+              <Text style={styles.txtheader} >Biodegradable: </Text><Text>{geminiResponse.biodegradable || 'N/A'}</Text>
+              <Text style={styles.txtheader} >Recyclable: </Text><Text>{geminiResponse.recyclable || 'N/A'}</Text>
+              <Text style={styles.txtheader} >Reusable: </Text><Text>{geminiResponse.reusable || 'N/A'}</Text>
+              <Text style={styles.txtheader} >Should be Burned: </Text><Text>{geminiResponse.should_be_burned || 'N/A'}</Text>
               {geminiResponse.should_be_burned === "No" && geminiResponse.reason_for_not_burning && (
-                <Text>Reason: {geminiResponse.reason_for_not_burning}</Text>
+               <> <Text style={styles.txtheader}>Reason:</Text><Text> {geminiResponse.reason_for_not_burning}</Text></>
               )}
               {geminiResponse.notes && (
-                <Text >Notes: {geminiResponse.notes}</Text>
+                <><Text style={styles.txtheader} >Notes: </Text><Text>{geminiResponse.notes}</Text></>
               )}
               
             </View>
@@ -132,11 +134,10 @@ export default function App() {
         : null}
 
         <Button onPress={() => { setUri(null); setGeminiResponse(null); }} title="Scan Another Waste" />
-          <TouchableOpacity><Text><Link href={{
-    pathname: '/maps',
+          <Link href={{
+      pathname: '/maps',
     params: { type: geminiResponse?.waste_type }
-  }}>View Disposal Sites</Link></Text></TouchableOpacity>
-        
+  }}>See dustbins</Link>   
       </View>
     );
   };
@@ -230,6 +231,11 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     alignItems: "center",
     justifyContent: "center",
+  },
+  txtheader : {
+    alignItems : "center",
+    fontSize: titleSize*0.7,
+    color: "#f00"
   },
   camera: {
     flex: 1,

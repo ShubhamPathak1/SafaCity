@@ -1,12 +1,16 @@
 import { Tabs } from 'expo-router';
 import React from 'react';
-import { Platform } from 'react-native';
+import { Dimensions, Platform } from 'react-native';
 
 import { HapticTab } from '@/components/HapticTab';
-import { IconSymbol } from '@/components/ui/IconSymbol';
 import TabBarBackground from '@/components/ui/TabBarBackground';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
+import { MaterialIcons } from '@expo/vector-icons';
+
+ const {height, width} = Dimensions.get('window');
+export const titleSize = (height+width) * 0.04/2;
+
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
@@ -15,7 +19,26 @@ export default function TabLayout() {
     <Tabs
       screenOptions={{
         tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
-        headerShown: false,
+        // headerShown: false,
+        headerRight: () => (
+          <>
+              <MaterialIcons 
+                name="person"
+                size = {titleSize}
+                color = "#000"
+                style = {{marginRight: titleSize}}
+                onPress = {() => {console.log('Personal stuff')}}
+                />
+                <MaterialIcons 
+                  name="notifications"
+                  size = {titleSize}
+                  color = "#000"
+                  style = {{marginRight: titleSize}}
+                  onPress = {() => {console.log('Notifs sent')}}
+                />
+
+            </>
+    ),
         tabBarButton: HapticTab,
         tabBarBackground: TabBarBackground,
         tabBarStyle: Platform.select({
@@ -26,25 +49,41 @@ export default function TabLayout() {
           default: {},
         }),
       }}>
+        <Tabs.Screen
+          name="maps"
+          options={{
+            title: 'Bin Map',
+            tabBarIcon: ({ color }) => (
+         <MaterialIcons name="map" size={28} color={color} />
+         ),
+          }}
+        />
       <Tabs.Screen
-        name="wastescan"
+        name="camera"
         options={{
           title: 'Waste Scan',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="camera.fill" color={color} />,
+          tabBarIcon: ({ color }) => (
+      <MaterialIcons name="center-focus-strong" size={28} color={color} />
+        ),
         }}
       />
       <Tabs.Screen
-        name="maps"
-        options={{
-          title: 'Bin Map',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="camera.fill" color={color} />,
-        }}
-      />
-      <Tabs.Screen
-        name="bot"
+        name="wastebot"
         options={{
           title: 'WasteBot',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="camera.fill" color={color} />,
+          tabBarIcon: ({ color }) => (
+        <MaterialIcons name="smart-toy" size={28} color={color} />
+          ),
+        }}
+      />
+
+      <Tabs.Screen
+        name="feedback"
+        options={{
+          title: 'Feedback',
+          tabBarIcon: ({ color }) => (
+        <MaterialIcons name="feedback" size={28} color={color} />
+          ),
         }}
       />
     </Tabs>
