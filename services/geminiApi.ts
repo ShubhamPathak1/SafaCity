@@ -92,7 +92,6 @@ export const sendToGemini = async (base64Image: string) => {
             text: `Analyze the provided image of waste.
             Your response must be a JSON object conforming to the following structure.
             Return ONLY the JSON object, with no additional text, explanation, or markdown code blocks (e.g., no \`\`\`json\`\`\` or \`\`\` delimiters).
-
             {
               "waste_type": "electronic/organic/plastic/metal/glass/Or any other type",
               "name": "string",
@@ -101,7 +100,8 @@ export const sendToGemini = async (base64Image: string) => {
               "biodegradable": "Yes/No",
               "recyclable": "Yes/No",
               "reusable": "Yes/No",
-              "notes": "string"
+              "notes": "string",
+              "rewards":"number(based on the type of waste, eg: biodegradable gets more points)"
             }
 
             Fill in the values based on the image content. If a value cannot be determined, use "N/A".`,
