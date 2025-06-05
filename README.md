@@ -1,50 +1,75 @@
-# Welcome to your Expo app 👋
+# 🧹 SafaCity
+**SafaCity** is an AI-powered mobile application that promotes cleaner, smarter cities by helping users identify waste types through their phone camera and providing real-time guidance.
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+With a simple scan, SafaCity performs waste analysis (type, degradability, recyclability, reusability, combustibility), shows nearby disposal sites, and enables users to ask questions via an AI-powered WasteBot. It also offers reward incentives, waste-related notifications, and lets users send feedback to relevant authorities.
 
-## Get started
+Built with **React Native + Expo** and powered by Google Gemini AI, **SafaCity** is your pocket-sized sustainability assistant.
 
-1. Install dependencies
+---
 
-   ```bash
-   npm install
-   ```
+## 🚀 Features
 
-2. Start the app
+- 📷 **Waste Recognition via Camera**  
+  Instantly analyze waste by scanning it with your phone. The app identifies:
+  - Type of waste  
+  - Degradability  
+  - Recyclability  
+  - Reusability  
+  - Combustibility (burnable or not)
 
-   ```bash
-   npx expo start
-   ```
+- 💬 **AI-Powered WasteBot**  
+  Ask anything about the scanned waste and get real-time answers with Google Gemini-powered assistance.
 
-In the output, you'll find options to open the app in a
+- 📍 **Disposal Site Suggestions**  
+  Get nearby disposal site recommendations based on the type of waste detected.
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+- 🏆 **Reward System**  
+  Earn points for responsible disposal actions, creating an incentive for sustainable habits.
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+- 🔔 **Smart Notifications**  
+  Receive timely, waste-related updates and educational content.
 
-## Get a fresh project
+- 📝 **Authority Feedback**  
+  Submit reports or feedback directly to the relevant municipal or environmental authorities.
 
-When you're ready, run:
+- 🔐 **User Authentication**  
+  Auth powered by [Clerk.dev](https://clerk.dev) for secure and seamless onboarding.
+
+---
+
+## 🔧 Tech Stack
+
+- React Native + Expo
+- TypeScript
+- Clerk for Authentication
+- Google Gemini API
+---
+
+## 🛠️ Setup & Installation
+
+### 1. Clone the repository
 
 ```bash
-npm run reset-project
+git clone https://github.com/your-username/safacity.git
+cd safacity
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+### 2. Create a .env file and add the following
+```
+EXPO_GOOGLE_GEMINI_API_KEY= your_api_key
+EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY= your_clerk_api_key
+```
 
-## Learn more
+### 3. Install Dependencies
+```
+npm install
+```
 
-To learn more about developing your project with Expo, look at the following resources:
+### 4. Start the app
+```
+npx expo start
+```
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+## License
+This project is open-source and available under the MIT License.
 
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
