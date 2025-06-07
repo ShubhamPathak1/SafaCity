@@ -33,7 +33,7 @@ Built with **React Native + Expo** and powered by Google Gemini AI, **SafaCity**
   Submit reports or feedback directly to the relevant municipal or environmental authorities.
 
 - 🔐 **User Authentication**  
-  Auth powered by [Clerk.dev](https://clerk.dev) for secure and seamless onboarding.
+  Auth powered by Clerk for secure and seamless onboarding.
 
 ---
 
