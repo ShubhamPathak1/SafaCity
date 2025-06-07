@@ -50,7 +50,7 @@ Built with **React Native + Expo** and powered by Google Gemini AI, **SafaCity**
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/your-username/safacity.git
+git clone https://github.com/ShubhamPathak1/SafaCity.git
 cd safacity
 ```
 
